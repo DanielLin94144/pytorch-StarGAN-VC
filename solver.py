@@ -149,14 +149,19 @@ class Solver(object):
             label_org = label_org.to(self.device)     # Original domain one-hot labels.
             label_trg = label_trg.to(self.device)     # Target domain one-hot labels.
             speaker_idx_org = speaker_idx_org.to(self.device) # Original domain labels
+            #print(speaker_idx_org)
             speaker_idx_trg = speaker_idx_trg.to(self.device) #Target domain labels
 
             # =================================================================================== #
             #                             2. Train the discriminator                              #
             # =================================================================================== #
             # Compute loss with real audio frame.
-            CELoss = nn.CrossEntropyLoss()
+            #CELoss = nn.CrossEntropyLoss()
+            CELoss = nn.BCELoss()
             cls_real = self.C(x_real)
+            #print(cls_real)
+            #speaker_idx_org = speaker_idx_org.view(speaker_idx_org.size(0), 1)
+            #print(speaker_idx_org)
             cls_loss_real = CELoss(input=cls_real, target=speaker_idx_org)
 
             self.reset_grad()
@@ -165,11 +170,14 @@ class Solver(object):
              # Logging.
             loss = {}
             loss['C/C_loss'] = cls_loss_real.item()
-
+            #print(x_real.shape)
+            #print(label_org.shape)
+            #print(label_org)
             out_r = self.D(x_real, label_org)
             # Compute loss with fake audio frame.
             x_fake = self.G(x_real, label_trg)
             out_f = self.D(x_fake.detach(), label_trg)
+            #print(out_f)
             d_loss_t = F.binary_cross_entropy_with_logits(input=out_f,target=torch.zeros_like(out_f, dtype=torch.float)) + \
                 F.binary_cross_entropy_with_logits(input=out_r, target=torch.ones_like(out_r, dtype=torch.float))
            
@@ -192,7 +200,7 @@ class Solver(object):
             # loss['D/d_loss_t'] = d_loss_t.item()
             # loss['D/loss_cls'] = d_loss_cls.item()
             # loss['D/D_gp'] = d_loss_gp.item()
-            loss['D/D_loss'] = d_loss.item()
+            loss['D/D_loss.'] = d_loss.item()
 
             # =================================================================================== #
             #                               3. Train the generator                                #
@@ -385,6 +393,11 @@ class Solver(object):
                     decoded_sp = decode_spectral_envelope(contigu, SAMPLE_RATE, fft_size=FFTSIZE)
                     f0_converted = norm.pitch_conversion(f0, speaker, target)
                     wav = synthesize(f0_converted, decoded_sp, ap, SAMPLE_RATE)
+                    # deemphasize
+                    #from scipy import signal
+                    #b = np.array([1])
+                    #a = np.array([1, -0.97])
+                    #wav = signal.lfilter(b,a,wav)
 
                     name = f'{speaker}-{target}_iter{self.test_iters}_{filename}'
                     path = os.path.join(self.result_dir, name)

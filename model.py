@@ -62,25 +62,30 @@ class Generator(nn.Module):
         )
 
         
-        self.up1 = Up2d(9, 64, (9,5), (9,1), (0,2))
-        self.up2 = Up2d(68, 128, (3,5), (1,1), (1,2))
-        self.up3 = Up2d(132, 64, (4,8), (2,2), (1,3))
-        self.up4 = Up2d(68, 32, (4,8), (2,2), (1,3))
+        self.up1 = Up2d(6, 64, (9,5), (9,1), (0,2))
+        self.up2 = Up2d(65, 128, (3,5), (1,1), (1,2))
+        self.up3 = Up2d(129, 64, (4,8), (2,2), (1,3))
+        self.up4 = Up2d(65, 32, (4,8), (2,2), (1,3))
 
-        self.deconv = nn.ConvTranspose2d(36, 1, (3,9), (1,1), (1,4))
+        self.deconv = nn.ConvTranspose2d(33, 1, (3,9), (1,1), (1,4))
 
     def forward(self, x, c):
+        #print('x', x.shape)
         x = self.downsample(x)
+        #print('x', x.shape)
+        #print('c', c.shape)
         c = c.view(c.size(0), c.size(1), 1, 1)
-
+        #print('c', c.shape)
         c1 = c.repeat(1, 1, x.size(2), x.size(3))
         x = torch.cat([x, c1], dim=1)
+        #print('x', x.shape)
+        #print('c1', c1.shape)
         x = self.up1(x)
 
         c2 = c.repeat(1,1,x.size(2), x.size(3))
         x = torch.cat([x, c2], dim=1)
         x = self.up2(x)
-
+        
         c3 = c.repeat(1,1,x.size(2), x.size(3))
         x = torch.cat([x, c3], dim=1)
         x = self.up3(x)
@@ -100,21 +105,26 @@ class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
         
-        self.d1 = Down2d(5, 32, (3,9), (1,1), (1,4))
-        self.d2 = Down2d(36, 32, (3,8), (1,2), (1,3))    
-        self.d3 = Down2d(36, 32, (3,8), (1,2), (1,3))    
-        self.d4 = Down2d(36, 32, (3,6), (1,2), (1,2)) 
+        self.d1 = Down2d(2, 32, (3,8), (1,1), (1,3))
+        self.d2 = Down2d(33, 32, (3,8), (1,2), (1,3))    
+        self.d3 = Down2d(33, 32, (3,8), (1,2), (1,3))    
+        self.d4 = Down2d(33, 32, (3,6), (1,2), (1,2)) 
         
-        self.conv = nn.Conv2d(36, 1, (36,5), (36,1), (0,2))
-        self.pool = nn.AvgPool2d((1,64))
+        self.conv = nn.Conv2d(33, 1, (33,5), (33,1), (0,2))
+        self.pool = nn.AvgPool2d((1,63))
     def forward(self, x, c):
+        #print(x.shape)
+        #print(c.shape)
         c = c.view(c.size(0), c.size(1), 1, 1)
-        
+        #print(c.shape)
         c1 = c.repeat(1, 1, x.size(2), x.size(3))
+        #print(c1.shape)
         x = torch.cat([x, c1], dim=1)
         x = self.d1(x)
 
         c2 = c.repeat(1, 1, x.size(2), x.size(3))
+        #print('x', x.shape)
+        #print('c2', c2.shape)
         x = torch.cat([x, c2], dim=1)
         x = self.d2(x)
 
@@ -144,15 +154,17 @@ class DomainClassifier(nn.Module):
             Down2d(8, 16, (4,4), (2,2), (1,1)),
             Down2d(16, 32, (4,4), (2,2), (0,1)),
             Down2d(32, 16, (3,4), (1,2), (1,1)),
-            nn.Conv2d(16, 4, (1,4), (1,2), (0,1)),
+            nn.Conv2d(16, 1 ,(1,4), (1,2), (0,1)),
             nn.AvgPool2d((1,16)),
-            nn.LogSoftmax()
+            nn.Sigmoid()
         )
         
     def forward(self, x):
        x = x[:, :, 0:8, :]
        x = self.main(x)
+       #print('domain', x.shape)
        x = x.view(x.size(0), x.size(1))
+    
        return x
 
 
@@ -165,7 +177,7 @@ if __name__ == '__main__':
 
     t = torch.rand([1,1,36,512])
     l = torch.FloatTensor([[0,1,0,0]])
-    print(l.size())
+    #print(l.size())
     # d1 = Down2d(1, 32, 1,1,1)
     # print(d1(t).shape)
 
@@ -177,7 +189,7 @@ if __name__ == '__main__':
     
     D = Discriminator()
     o2 = D(t, l)
-    print(o2.shape, o2)
+    #print(o2.shape, o2)
 
     # C = DomainClassifier()
     # o3 = C(t)

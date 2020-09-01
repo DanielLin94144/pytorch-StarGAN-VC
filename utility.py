@@ -33,9 +33,11 @@ class CommonInfo(metaclass=Singleton):
             
         all_speaker = [s.rsplit('/', maxsplit=1)[1] for s in all_sub_folder]
         all_speaker.sort()
+        print('speaker: ', all_speaker)
         return all_speaker
 
 speakers = CommonInfo('data/speakers').speakers
+
 
 
 class Normalizer(object):

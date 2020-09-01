@@ -25,12 +25,18 @@ class AudioDataset(Dataset):
     def __getitem__(self, idx):
         p = self.files[idx]
         filename = os.path.basename(p)
+        #print('filename', filename)
         speaker = filename.split(sep='_', maxsplit=1)[0]
+        #print('speaker', speaker)
         label = self.encoder.transform([speaker])[0]
+        #print(label)
         mcep = np.load(p)
         mcep = torch.FloatTensor(mcep)
         mcep = torch.unsqueeze(mcep, 0)
-        return mcep, torch.tensor(speakers.index(speaker), dtype=torch.long), torch.FloatTensor(label)
+
+        #print('d', torch.tensor(speakers.index(speaker), dtype=torch.long))
+        #return mcep, torch.tensor(speakers.index(speaker), dtype=torch.long), torch.FloatTensor(label)
+        return mcep, torch.tensor(speakers.index(speaker), dtype=torch.float), torch.FloatTensor(label)
 
     def speaker_encoder(self):
         return self.encoder
@@ -74,6 +80,9 @@ class TestSet(object):
         for f in wavfiles:
             filename = os.path.basename(f)
             wav, _ = librosa.load(f, sr=SAMPLE_RATE, dtype=np.float64)
+            # trimming for testing data to avoid unwanted noise
+            wav,_ = librosa.effects.trim(wav, top_db=15)
+
             f0, timeaxis, sp, ap, coded_sp = world_features(wav, SAMPLE_RATE, FFTSIZE, FEATURE_DIM)
             coded_sp_norm = self.norm.forward_process(coded_sp.T, r_s)
 
@@ -107,7 +116,7 @@ if __name__=='__main__':
     #     coded_sp_norm = np.hstack((coded_sp_norm, np.zeros((coded_sp_norm.shape[0], pad_length))))
     #     print('after:' , coded_sp_norm.shape)
     # print(t[1])
-    ad = AudioDataset('./data/processed')
+    ad = AudioDataset('./data/processed2')
     print(len(ad))
 
     data, s,label = ad[500]

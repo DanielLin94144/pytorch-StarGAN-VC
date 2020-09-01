@@ -69,17 +69,17 @@ if __name__ == '__main__':
     parser.add_argument('--trg_speaker', type=str, default="['SF1', 'TM1']", help='string list repre of target speakers eg."[a,b]"')
 
     # Miscellaneous.
-    parser.add_argument('--num_workers', type=int, default=4)
+    parser.add_argument('--num_workers', type=int, default=12)
     parser.add_argument('--mode', type=str, default='train', choices=['train', 'test'])
     parser.add_argument('--use_tensorboard', type=str2bool, default=True)
 
     # Directories.
-    parser.add_argument('--data_dir', type=str, default='data/processed')
+    parser.add_argument('--data_dir', type=str, default='data/processed2')
     parser.add_argument('--test_dir', type=str, default='data/speakers_test')
-    parser.add_argument('--log_dir', type=str, default='starganvc/logs')
-    parser.add_argument('--model_save_dir', type=str, default='starganvc/models')
-    parser.add_argument('--sample_dir', type=str, default='starganvc/samples')
-    parser.add_argument('--result_dir', type=str, default='starganvc/results')
+    parser.add_argument('--log_dir', type=str, default='starganvc5/logs')
+    parser.add_argument('--model_save_dir', type=str, default='starganvc5/models')
+    parser.add_argument('--sample_dir', type=str, default='starganvc5/samples')
+    parser.add_argument('--result_dir', type=str, default='starganvc5/results')
     
     # Step size.
     parser.add_argument('--log_step', type=int, default=10)

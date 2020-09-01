@@ -47,8 +47,8 @@ def load_wavs(dataset: str, sr):
             newkey = f'{filename}'
             wav, _ = librosa.load(one_file, sr=sr, mono=True, dtype=np.float64)
             y,_ = librosa.effects.trim(wav, top_db=15)
-            wav = np.append(y[0], y[1:] - 0.97 * y[:-1])
-
+            #wav = np.append(y[0], y[1:] - 0.97 * y[:-1])
+            wav = y
             resdict[key][newkey] = wav
             # resdict[key].append(temp_dict) #like TM1:{100062:[xxxxx], .... }
             print('.', end='')
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     and calculate the speech statistical characteristics')
     
     input_dir = './data/speakers'
-    output_dir = './data/processed'
+    output_dir = './data/processed2'
    
     parser.add_argument('--input_dir', type = str, help = 'the direcotry contains data need to be processed', default = input_dir)
     parser.add_argument('--output_dir', type = str, help = 'the directory stores the processed data', default = output_dir)
